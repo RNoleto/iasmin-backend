@@ -1,0 +1,59 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_LOCAL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionLevel {
+  FREE
+  INTIMO
+  ELITE
+}
+
+model User {
+  id            String            @id @default(uuid())
+  email         String            @unique
+  password      String            
+  name          String?
+  role          Role              @default(USER)
+  subscription  SubscriptionLevel @default(FREE)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+// Tabela para armazenar as imagens geradas pela IA e evitar re-geração
+model GalleryItem {
+  id          String   @id @default(uuid())
+  title       String
+  prompt      String   @db.Text // O prompt exato usado na IA
+  imageUrl    String   // URL da imagem no Storage (S3/Supabase/Cloudinary)
+  aspectRatio String   // Ex: "1:1", "9:16"
+  isPremium   Boolean  @default(true)
+  isVisible   Boolean  @default(true) // Admin pode ocultar sem deletar
+  createdAt   DateTime @default(now())
+
+  @@index([prompt]) // Índice para busca rápida pelo prompt
+}
+
+// Histórias que a Iasmin (Admin) vai escrever pelo painel
+model Story {
+  id          String   @id @default(uuid())
+  title       String
+  excerpt     String   @db.Text // Resumo curto para o card
+  content     String   @db.Text // Texto completo para a narração
+  audioUrl    String?  // URL do áudio gerado (cacheado)
+  coverUrl    String?  // URL da capa
+  duration    String?  // Ex: "06:15"
+  isPremium   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
