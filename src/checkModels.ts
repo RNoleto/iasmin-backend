@@ -1,32 +1,42 @@
-import { GoogleGenAI } from "@google/genai";
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const main = async () => {
-  const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const apiKey = process.env.GEMINI_API_KEY;
   
-  console.log("🔍 Verificando modelos disponíveis para sua chave...");
+  if (!apiKey) {
+    console.error("❌ ERRO: GEMINI_API_KEY não encontrada no .env");
+    return;
+  }
+
+  console.log("🔍 Verificando modelos disponíveis via API direta...");
   
   try {
-    // Tenta listar os modelos (a SDK pode variar, vamos tentar listagem direta via REST se falhar)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+    // Consulta direta à API do Google sem usar a biblioteca problemática
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    
+    if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
     
     if (data.models) {
-      console.log("\n✅ Modelos encontrados:");
+      console.log("\n✅ MODELOS ENCONTRADOS (Copie um destes):");
+      console.log("------------------------------------------------");
       data.models.forEach((m: any) => {
-        // Filtra apenas modelos que parecem gerar conteúdo
+        // Mostra apenas modelos de geração de conteúdo
         if (m.supportedGenerationMethods?.includes("generateContent")) {
-            console.log(`- ${m.name.replace('models/', '')}`);
+            console.log(`🔹 ${m.name.replace('models/', '')}`);
         }
       });
+      console.log("------------------------------------------------");
     } else {
-      console.log("❌ Nenhum modelo encontrado ou erro de permissão.");
-      console.log(data);
+      console.log("❌ Nenhum modelo retornado.");
     }
   } catch (error) {
-    console.error("❌ Erro ao listar modelos:", error);
+    console.error("❌ Falha ao verificar modelos:", error);
   }
 };
 

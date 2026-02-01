@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { getGallery, generateAndSaveImage } from './controllers/galleryController';
+import { sendMessage } from './controllers/chatController';
 
 dotenv.config();
 
@@ -26,4 +27,11 @@ app.post('/api/gallery/generate', generateAndSaveImage); // Gera ou recupera do 
 app.listen(PORT, () => {
   console.log(`🔥 Servidor rodando na porta ${PORT}`);
   console.log(`📂 Armazenamento local: http://localhost:${PORT}/uploads`);
+});
+
+app.post('/api/chat/message', sendMessage);
+
+app.listen(PORT, () => {
+  console.log(`🔥 Servidor rodando na porta ${PORT}`);
+  console.log(`📂 Armazenamento: http://localhost:${PORT}/uploads`);
 });
