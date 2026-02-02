@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import * as googleTTS from 'google-tts-api';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -150,4 +151,79 @@ export const generateImageFromPrompt = async (prompt: string, aspectRatio: strin
     }
   }
   return null;
+};
+
+// // --- GERAÇÃO DE ÁUDIO (CORRIGIDA - REMOVENDO MIME TYPE) ---
+// export const generateAudio = async (text: string): Promise<string | null> => {
+//   try {
+//     const cleanText = text.replace(/\*.*?\*/g, '').trim();
+
+//     if (!cleanText) return null;
+
+//     console.log(`🎤 [TTS] Gerando áudio para: "${cleanText.substring(0, 30)}..."`);
+    
+//     const response = await genAI.models.generateContent({
+//       model: 'gemini-2.5-flash-preview-tts', 
+//       contents: { parts: [{ text: cleanText }] },
+//       config: {
+//         // @ts-ignore
+//         responseModalities: ["AUDIO"], // Mantém isso (Obrigatório)
+        
+//         // REMOVIDO: responseMimeType (Causava o erro 400)
+        
+//         // @ts-ignore
+//         speechConfig: {
+//           voiceConfig: {
+//             prebuiltVoiceConfig: {
+//               voiceName: "Aoede", 
+//             },
+//           },
+//         },
+//       }
+//     });
+
+//     const candidate = response.candidates?.[0];
+    
+//     // @ts-ignore
+//     const audioBase64 = candidate?.content?.parts?.[0]?.inlineData?.data;
+
+//     if (audioBase64) {
+//       console.log("✅ [TTS] Áudio gerado com sucesso!");
+//       return audioBase64;
+//     }
+    
+//     throw new Error("Nenhum dado de áudio retornado.");
+
+//   } catch (error: any) {
+//     console.error("❌ Erro no TTS:", error.message || error);
+//     return null;
+//   }
+// };
+
+// --- GERAÇÃO DE ÁUDIO (ILIMITADA VIA GOOGLE TTS) ---
+export const generateAudio = async (text: string): Promise<string | null> => {
+  try {
+    // 1. Limpeza do texto (remove asteriscos de ação)
+    const cleanText = text.replace(/\*.*?\*/g, '').trim();
+    
+    if (!cleanText) return null;
+
+    console.log(`🎤 [TTS] Gerando áudio ilimitado para: "${cleanText.substring(0, 30)}..."`);
+
+    // 2. Gera o Base64 usando a API gratuita
+    // O splitPunctuation ajuda a lidar com frases longas
+    const base64 = await googleTTS.getAudioBase64(cleanText, {
+      lang: 'pt',
+      slow: false,
+      host: 'https://translate.google.com',
+      timeout: 10000,
+    });
+
+    console.log("✅ [TTS] Áudio gerado com sucesso!");
+    return base64;
+
+  } catch (error: any) {
+    console.error("❌ Erro no TTS:", error.message || error);
+    return null;
+  }
 };

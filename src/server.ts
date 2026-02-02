@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { getGallery, generateAndSaveImage } from './controllers/galleryController';
 import { sendMessage } from './controllers/chatController';
+import { sendAudio } from './controllers/audioController';
 
 dotenv.config();
 
@@ -24,12 +25,9 @@ app.get('/', (req, res) => { res.json({ status: 'Iasmin Backend Online 🌶️' 
 app.get('/api/gallery', getGallery); // Lista as fotos
 app.post('/api/gallery/generate', generateAndSaveImage); // Gera ou recupera do banco
 
-app.listen(PORT, () => {
-  console.log(`🔥 Servidor rodando na porta ${PORT}`);
-  console.log(`📂 Armazenamento local: http://localhost:${PORT}/uploads`);
-});
-
+// Rota do Chat
 app.post('/api/chat/message', sendMessage);
+app.post('/api/audio/generate', sendAudio);
 
 app.listen(PORT, () => {
   console.log(`🔥 Servidor rodando na porta ${PORT}`);
